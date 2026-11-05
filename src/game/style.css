@@ -1,0 +1,229 @@
+.ifsoul-dungeon {
+  color: var(--foreground, #25302e);
+  font-family: inherit;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.ifsoul-dungeon * {
+  box-sizing: border-box;
+}
+.ifsoul-dungeon .dg-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ifsoul-dungeon .dg-heading h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.ifsoul-dungeon .dg-subtitle,
+.ifsoul-dungeon .dg-hint {
+  font-size: 12px;
+  color: var(--muted-foreground, #67736f);
+  margin: 4px 0 0;
+}
+.ifsoul-dungeon .dg-status {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.ifsoul-dungeon .dg-vitals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.ifsoul-dungeon .dg-vitals label {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.ifsoul-dungeon progress {
+  width: 100%;
+  height: 7px;
+  accent-color: #568fa4;
+  display: block;
+}
+.ifsoul-dungeon .dg-companion progress {
+  accent-color: #a080b9;
+}
+.ifsoul-dungeon .dg-stage {
+  position: relative;
+  aspect-ratio: 8/5;
+  width: 100%;
+  min-height: 210px;
+  background: #101c26;
+  border-radius: 12px;
+  overflow: hidden;
+  outline-offset: 3px;
+  touch-action: none;
+}
+.ifsoul-dungeon .dg-canvas {
+  position: absolute;
+  inset: 0;
+}
+.ifsoul-dungeon canvas {
+  display: block;
+  max-width: 100%;
+}
+.ifsoul-dungeon .dg-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 18px;
+  background: #0a1520cf;
+  color: #f0eadb;
+  z-index: 2;
+}
+.ifsoul-dungeon .dg-overlay[hidden] {
+  display: none;
+}
+.ifsoul-dungeon .dg-overlay h3 {
+  font-size: clamp(18px, 3vw, 28px);
+  margin: 0 0 8px;
+}
+.ifsoul-dungeon .dg-overlay p {
+  max-width: 410px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 auto 14px;
+}
+.ifsoul-dungeon .dg-options {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ifsoul-dungeon button {
+  font: inherit;
+  border: 1px solid var(--border, #d5dad8);
+  border-radius: 8px;
+  background: var(--background, #fff);
+  color: var(--foreground, #25302e);
+  padding: 10px 14px;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+  touch-action: none;
+}
+.ifsoul-dungeon button:focus-visible,
+.ifsoul-dungeon .dg-stage:focus-visible {
+  outline: 3px solid var(--ring, #6b98be);
+}
+.ifsoul-dungeon button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.ifsoul-dungeon button:active,
+.ifsoul-dungeon button[data-held="true"] {
+  transform: translateY(1px);
+  background: var(--muted, #e8ecea);
+}
+.ifsoul-dungeon .dg-overlay button {
+  background: #e6eddf;
+  color: #17322e;
+  border-color: #9ebbad;
+}
+.ifsoul-dungeon .dg-speech {
+  border-left: 3px solid var(--border, #b8c8bc);
+  padding: 7px 12px;
+  min-height: 62px;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--muted, #f4f5f2);
+  border-radius: 0 8px 8px 0;
+}
+.ifsoul-dungeon .dg-speaker {
+  font-size: 11px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+}
+.ifsoul-dungeon .dg-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.ifsoul-dungeon .dg-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(2, 44px);
+  gap: 4px;
+}
+.ifsoul-dungeon .dg-dpad button {
+  padding: 5px;
+}
+.ifsoul-dungeon .dg-up {
+  grid-column: 2;
+}
+.ifsoul-dungeon .dg-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+.ifsoul-dungeon .dg-down {
+  grid-column: 2;
+  grid-row: 2;
+}
+.ifsoul-dungeon .dg-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+.ifsoul-dungeon .dg-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.ifsoul-dungeon .dg-actions button {
+  font-size: 12px;
+}
+.ifsoul-dungeon .dg-paused {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #102331db;
+  color: #e4e9d5;
+  font-size: 12px;
+  pointer-events: none;
+}
+.ifsoul-dungeon .dg-paused[hidden] {
+  display: none;
+}
+@media (max-width: 460px) {
+  .ifsoul-dungeon .dg-controls {
+    gap: 6px;
+  }
+  .ifsoul-dungeon .dg-actions {
+    max-width: 145px;
+    gap: 5px;
+  }
+  .ifsoul-dungeon .dg-actions button {
+    padding: 8px;
+    min-height: 44px;
+  }
+  .ifsoul-dungeon .dg-overlay {
+    padding: 12px;
+  }
+  .ifsoul-dungeon .dg-overlay p {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  .ifsoul-dungeon .dg-vitals {
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ifsoul-dungeon button:active {
+    transform: none;
+  }
+}

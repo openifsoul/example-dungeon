@@ -1,0 +1,169 @@
+@import "tailwindcss";
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: #fff;
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-secondary: var(--accent);
+  --color-ring: var(--primary);
+  --color-muted-foreground: var(--muted-foreground);
+}
+:root {
+  font-family: system-ui, sans-serif;
+  color: #37352f;
+  background: #f7f7f5;
+  --background: #fff;
+  --foreground: #37352f;
+  --primary: #2383e2;
+  --border: #e4e4e1;
+  --accent: #f1f1ef;
+  --muted-foreground: #6b6b66;
+  --radius: 8px;
+  font-synthesis: none;
+  color-scheme: light;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1024px;
+  margin: auto;
+  padding: 32px 24px;
+  background: var(--background);
+  min-height: 100vh;
+}
+main[data-theme="dark"] {
+  --background: #202020;
+  --foreground: #e6e6e5;
+  --primary: #529cca;
+  --border: #444440;
+  --accent: #30302e;
+  --muted-foreground: #aaa9a4;
+  color: var(--foreground);
+  color-scheme: dark;
+}
+h1 {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 650;
+  margin: 4px 0 12px;
+  letter-spacing: -0.04em;
+}
+h2 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 12px 0;
+}
+p {
+  line-height: 1.6;
+}
+.eyebrow,
+footer {
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: 16px 0;
+}
+.toolbar label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+.toolbar button,
+select {
+  min-height: 44px;
+}
+select {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--foreground);
+}
+.playfield {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+section:not(.toolbar) {
+  margin: 18px 0;
+}
+li {
+  font-size: 14px;
+  line-height: 1.6;
+}
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+footer {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+@media (max-width: 500px) {
+  main {
+    padding: 20px 12px;
+  }
+  .toolbar {
+    gap: 8px;
+  }
+  .toolbar label {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.transcript {
+  max-height: 280px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 8px;
+}
+.transcript p {
+  font-size: 14px;
+  margin: 6px 0;
+}
+form {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+textarea {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+}
+form button {
+  justify-self: start;
+  min-height: 44px;
+}
+
+main {
+  --muted: var(--accent);
+  --card: var(--background);
+  --ring: var(--primary);
+  --primary-foreground: #fff;
+}

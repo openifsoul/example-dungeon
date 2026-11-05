@@ -1,0 +1,63 @@
+{
+  "name": "@ifsoul/example-dungeon",
+  "version": "0.1.0-alpha.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Independent original The Hollow Warden host and IfSoul bridge example",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "LICENSES"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./simulation": {
+      "types": "./dist/simulation.d.ts",
+      "import": "./dist/simulation.js"
+    },
+    "./adapter": {
+      "types": "./dist/adapter.d.ts",
+      "import": "./dist/adapter.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "bundledDependencies": [
+    "@ifsoul/adapter-sdk"
+  ],
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "test": "tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "pnpm typecheck && vite build && vite build --config vite.package.config.ts && tsc -p tsconfig.types.json && node scripts/clean-declarations.mjs",
+    "check": "pnpm typecheck && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "@ifsoul/adapter-sdk": "file:vendor/ifsoul-adapter-sdk-0.1.0-alpha.1.tgz",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "tailwind-merge": "3.7.0",
+    "radix-ui": "1.8.1",
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "7.0.2",
+    "tsx": "4.23.15",
+    "vite": "8.3.6",
+    "@vitejs/plugin-react": "6.2.1",
+    "@tailwindcss/vite": "4.3.4",
+    "tailwindcss": "4.3.4"
+  },
+  "packageManager": "pnpm@10.15.0",
+  "engines": {
+    "node": ">=22.18 <25"
+  }
+}
