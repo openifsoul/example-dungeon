@@ -1,6 +1,6 @@
+import { exampleScenarioResponse } from "./scenario.js";
 import {
   createGameBridge,
-  scenarioResponse,
   type GameCharacter,
   type BridgeTransport,
   type BridgeHistory,
@@ -42,7 +42,9 @@ export async function createExampleSession(
     hostId: "dungeon",
     character,
     transport:
-      options.transport ?? (async (request) => scenarioResponse(request)),
+      options.transport ??
+      (async (request) => exampleScenarioResponse(request)),
+    fallback: exampleScenarioResponse,
     signal,
     history: () => history,
     onObservation(event) {

@@ -235,7 +235,7 @@ packages:
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
   '@ifsoul/adapter-sdk@file:vendor/ifsoul-adapter-sdk-0.1.0-alpha.1.tgz':
-    resolution: {integrity: sha512-ApReVHUAka/Bknjnac3id1hL821Dh7U9u01SBEKTMv4W0T0NDWEOAnV6AoS6v1VUean6/qx3lfktQ5n0RT8Cmg==, tarball: file:vendor/ifsoul-adapter-sdk-0.1.0-alpha.1.tgz}
+    resolution: {integrity: sha512-fWQBWYP0MC1A6eBRxEKJUkzwYt1ZNFvYT6LO+XuSQD72TvR9VWjgIx/G6CkCwdZKKcWh2adKmTsjEtc/8CIAag==, tarball: file:vendor/ifsoul-adapter-sdk-0.1.0-alpha.1.tgz}
     version: 0.1.0-alpha.1
     engines: {node: '>=22.18'}
 

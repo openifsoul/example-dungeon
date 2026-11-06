@@ -68,6 +68,12 @@ test("role choice is one-time and always gives the companion the complementary r
     assert.equal(chooseRole(state, role), true);
     assert.equal(state.player.role, role);
     assert.notEqual(state.companion.role, role);
+    assert.deepEqual(state.events[0].reportedClaims, [
+      { subject: "actor", key: "role", value: role },
+      { subject: "recipient", key: "role", value: state.companion.role },
+    ]);
+    assert.equal(state.events[0].actor, "user");
+    assert.equal(state.events[0].recipient, "agent");
     assert.equal(state.room, 0);
     assert.equal(chooseRole(state, role), false);
     assert.equal(enterNextRoom(state), false, "a live room cannot be skipped");
@@ -212,7 +218,10 @@ for (const role of ["tank", "healer"] as const) {
       events.filter((e) => e.summary.startsWith("Cleared")).length,
       3,
     );
-    assert.equal(events.filter((e) => e.kind === "outcome").length, 1);
+    assert.equal(
+      events.filter((e) => e.kind === "outcome" && e.actor === "host").length,
+      1,
+    );
     assert.match(events.at(-1)!.summary, /defeated the Hollow Warden/);
     assert.deepEqual(drainDungeonEvents(state), []);
     const snapshot = JSON.stringify(state);
@@ -227,6 +236,81 @@ for (const role of ["tank", "healer"] as const) {
 
 test("the same inputs produce the same host outcomes", () => {
   assert.deepEqual(finishExpedition("tank"), finishExpedition("tank"));
+});
+
+test("fixture combat damage and healing report bounded completed help with preserved roles", () => {
+  const state = createDungeon();
+  chooseRole(state, "healer");
+  drainDungeonEvents(state);
+  for (let room = 0; room < 2; room++) {
+    // Explicit host fixture: a near-expiry strike, not a claim of a normal play route.
+    state.enemies = [];
+    state.warnings = [
+      {
+        x: state.companion.x,
+        y: state.companion.y,
+        radius: 44,
+        remaining: 0.01,
+        duration: 0.7,
+        damage: 12,
+      },
+    ];
+    frame(state, 1);
+    assert.equal(state.companion.hp, state.companion.maxHp - 12);
+    frame(state, 1, { ...EMPTY_INPUT, skill: true });
+    assert.equal(state.companion.hp, state.companion.maxHp);
+    state.wave = 4;
+    frame(state, 1);
+    const helps = drainDungeonEvents(state).filter(
+      (event) => event.actor === "user",
+    );
+    assert.equal(helps.length, 1);
+    assert.equal(helps[0].kind, "outcome");
+    assert.equal(helps[0].observer, "user");
+    assert.equal(helps[0].recipient, "agent");
+    assert.match(
+      helps[0].summary,
+      /1 completed nearby healing actions restored 12 companion health/,
+    );
+    frame(state, 20);
+    assert.deepEqual(drainDungeonEvents(state), []);
+    if (room === 0) {
+      enterNextRoom(state);
+      drainDungeonEvents(state);
+    }
+  }
+});
+
+test("healing reports only positive companion health deltas and flushes once on loss", () => {
+  const state = createDungeon();
+  chooseRole(state, "healer");
+  state.enemies = [];
+  drainDungeonEvents(state);
+  frame(state, 1, { ...EMPTY_INPUT, skill: true });
+  assert.equal(state.roomHelp.count, 0, "full health is not help");
+  state.player.skillCooldown = 0;
+  state.companion.hp -= 10;
+  state.companion.x = 900;
+  frame(state, 1, { ...EMPTY_INPUT, skill: true });
+  assert.equal(state.roomHelp.count, 0, "out of range is not help");
+  state.player.skillCooldown = 0;
+  state.companion.x = state.player.x;
+  state.companion.y = state.player.y;
+  frame(state, 1, { ...EMPTY_INPUT, skill: true });
+  assert.deepEqual(state.roomHelp, { count: 1, restoredHp: 10 });
+  assert.deepEqual(drainDungeonEvents(state), [], "no per-frame report spam");
+  state.player.hp = 0;
+  frame(state, 1);
+  const help = drainDungeonEvents(state).filter(
+    (event) => event.actor === "user",
+  );
+  assert.equal(help.length, 1);
+  assert.match(
+    help[0].summary,
+    /1 completed nearby healing actions restored 10 companion health/,
+  );
+  frame(state, 20);
+  assert.deepEqual(drainDungeonEvents(state), []);
 });
 
 test("loss is reported once, cannot advance, and is never a claimed victory", () => {
@@ -311,4 +395,29 @@ test("a simultaneous Warden kill and player death reports both actual outcomes",
   assert.equal(events.length, 1);
   assert.match(events[0].summary, /Warden also fell/);
   assert.doesNotMatch(events[0].summary, /Warden was not defeated/);
+});
+
+test("room and expedition resolution report host outcomes rather than player deeds", () => {
+  const state = createDungeon();
+  chooseRole(state, "tank");
+  const initial = drainDungeonEvents(state);
+  const roleChoice = initial.find((event) =>
+    event.summary.startsWith("The player selected"),
+  );
+  assert.equal(roleChoice?.actor, "user");
+  assert.equal(roleChoice?.observer, "agent");
+  assert.equal(roleChoice?.recipient, "agent");
+  assert.match(roleChoice!.summary, /selected the tank role/);
+  const entry = initial.find((event) => event.summary.startsWith("Entered"))!;
+  assert.equal(entry.actor, "host");
+  assert.equal(entry.observer, "user");
+  assert.equal(entry.recipient, "unknown");
+  state.player.hp = 0;
+  state.companion.hp = 0;
+  stepDungeon(state, EMPTY_INPUT, 0.05);
+  const outcome = drainDungeonEvents(state).find(
+    (event) => event.kind === "outcome",
+  );
+  assert.equal(outcome?.actor, "host");
+  assert.match(outcome!.summary, /player fell/);
 });

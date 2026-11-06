@@ -59,6 +59,22 @@ deployment or production support is claimed by this example.
 
 Choose Tank or Healer; the companion takes the complementary role. Move with WASD/arrows or touch controls, hold Space/Attack, and use Shift/Ability for guard or nearby healing. Clear three rooms and the Warden. Four optional speech requests never control combat, movement or the host companion AI.
 
+Role selection is reported as a completed player choice observed by the companion,
+with both historical roles in the source text. Room and expedition resolutions
+remain host outcomes. A player Healer's ability records help only when it actually
+increases the nearby companion's health; self-healing, full health, out-of-range
+casts and cooldown attempts do not count. Each room emits at most one aggregated
+help outcome on clear or loss, preserving user actor, user observer and agent
+recipient. No per-frame model calls or gameplay rules are added.
+
+The simulation test `fixture combat damage and healing` demonstrates two distinct
+room help outcomes using explicitly arranged near-expiry enemy strikes, then the
+ordinary healing ability and room resolution. Run `pnpm exec tsx --test
+--test-name-pattern='fixture combat damage and healing' tests/simulation.test.ts`.
+This is controlled simulation evidence, not proof of a natural player route:
+the current companion can evade all damage in deterministic expedition play,
+and a normal-game sequence producing two help outcomes has not been verified.
+
 The local .npmrc selects hoisted installation because pnpm bundling requires it.
 No dependencies resolve through a sibling checkout. The included SDK tarball is
 redistributed under its Apache-2.0 license, with its own bundled notices.
@@ -98,3 +114,11 @@ checks. Bubbles type the text visually, announce the whole line accessibly, resp
 reduced motion and release timers/animations on pause or destruction. The SDK
 returns authored scenario/fallback reactions instead of quoting raw host reports;
 model plan explanations are not dialogue. No action authority is added.
+
+Host-requested decisions and remarks await the SDK bridge's configured bounded
+request deadline. The game does not impose a shorter model-independent timeout
+that could discard a valid slower reply. Rejected requests retain the existing
+labelled host fallback/unavailable state, and phase/version, pause and destruction
+checks still prevent stale adoption or late presentation. A custom injected
+`GameBridge` must provide bounded settlement and honor its connection lifetime;
+an indefinitely pending custom bridge is not a supported integration.

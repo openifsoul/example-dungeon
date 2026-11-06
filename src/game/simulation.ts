@@ -37,9 +37,17 @@ export interface Effect {
   kind: "hit" | "heal" | "guard";
 }
 export interface DungeonEvent {
+  reportedClaims?: {
+    subject: "actor" | "recipient";
+    key: "role" | "preference";
+    value: string;
+  }[];
   id: string;
   kind: "progress" | "outcome";
   summary: string;
+  actor: "host" | "user";
+  observer: "user" | "agent";
+  recipient: "unknown" | "agent";
 }
 export interface DungeonInput {
   x: number;
@@ -62,6 +70,7 @@ export interface DungeonState {
   guard: number;
   nextId: number;
   events: DungeonEvent[];
+  roomHelp: { count: number; restoredHp: number };
 }
 export const WIDTH = 960;
 export const HEIGHT = 600;
@@ -110,6 +119,7 @@ export function createDungeon(): DungeonState {
     guard: 0,
     nextId: 1,
     events: [],
+    roomHelp: { count: 0, restoredHp: 0 },
   };
 }
 function emit(
@@ -117,15 +127,46 @@ function emit(
   summary: string,
   kind: DungeonEvent["kind"] = "progress",
 ) {
-  state.events.push({ id: `dungeon-${state.nextId++}`, summary, kind });
+  state.events.push({
+    id: `dungeon-${state.nextId++}`,
+    summary,
+    kind,
+    actor: "host",
+    observer: "user",
+    recipient: "unknown",
+  });
 }
 export function drainDungeonEvents(state: DungeonState): DungeonEvent[] {
   return state.events.splice(0);
+}
+function flushRoomHelp(state: DungeonState) {
+  if (!state.roomHelp.count) return;
+  state.events.push({
+    id: `dungeon-${state.nextId++}`,
+    kind: "outcome",
+    actor: "user",
+    observer: "user",
+    recipient: "agent",
+    summary: `The player helped the companion in ${ROOM_NAMES[state.room]}: ${state.roomHelp.count} completed nearby healing actions restored ${Math.round(state.roomHelp.restoredHp * 100) / 100} companion health in total.`,
+  });
+  state.roomHelp = { count: 0, restoredHp: 0 };
 }
 export function chooseRole(state: DungeonState, role: Role): boolean {
   if (state.phase !== "choose") return false;
   state.player = body(role, 420, 320);
   state.companion = body(role === "tank" ? "healer" : "tank", 510, 350);
+  state.events.push({
+    id: `dungeon-${state.nextId++}`,
+    kind: "outcome",
+    actor: "user",
+    observer: "agent",
+    recipient: "agent",
+    summary: `The player selected the ${role} role. The companion received the complementary ${state.companion.role} role for this expedition.`,
+    reportedClaims: [
+      { subject: "actor", key: "role", value: role },
+      { subject: "recipient", key: "role", value: state.companion.role },
+    ],
+  });
   state.phase = "cleared";
   return enterNextRoom(state);
 }
@@ -133,6 +174,7 @@ export function enterNextRoom(state: DungeonState): boolean {
   if (state.phase !== "cleared" || state.room >= 3) return false;
   state.room++;
   state.roomTime = 0;
+  state.roomHelp = { count: 0, restoredHp: 0 };
   state.wave = 0;
   state.phase = "combat";
   state.warnings = [];
@@ -265,8 +307,15 @@ function skill(state: DungeonState, actor: Body) {
   } else {
     actor.hp = Math.min(actor.maxHp, actor.hp + 32);
     const other = actor === state.player ? state.companion : state.player;
-    if (distance(actor, other) < 280)
+    if (distance(actor, other) < 280) {
+      const before = other.hp;
       other.hp = Math.min(other.maxHp, other.hp + 42);
+      const restored = other.hp - before;
+      if (actor === state.player && restored > 0) {
+        state.roomHelp.count++;
+        state.roomHelp.restoredHp += restored;
+      }
+    }
     state.effects.push({
       x: actor.x,
       y: actor.y,
@@ -404,6 +453,7 @@ export function stepDungeon(
   state.enemies = state.enemies.filter((enemy) => enemy.hp > 0);
   if (state.player.hp <= 0) {
     state.phase = "lost";
+    flushRoomHelp(state);
     const wardenDefeated =
       state.room === 3 &&
       !state.enemies.some((enemy) => enemy.kind === "warden");
@@ -417,6 +467,7 @@ export function stepDungeon(
   if (state.wave < 4 && state.roomTime >= state.wave * 8) spawnWave(state);
   if (state.wave === 4 && state.enemies.length === 0) {
     state.phase = state.room === 3 ? "won" : "cleared";
+    flushRoomHelp(state);
     emit(
       state,
       state.phase === "won"

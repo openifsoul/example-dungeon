@@ -17,7 +17,7 @@ import { createSpeechBubble } from "./speech-bubble.js";
 /** Self-contained browser host. Models can speak, never select mechanics. */
 export async function mount(
   container: HTMLElement,
-  options: GameMountOptions,
+  options: GameMountOptions
 ): Promise<MountedGame> {
   const inert: MountedGame = { pause() {}, resume() {}, destroy() {} };
   if (options.signal.aborted) return inert;
@@ -81,22 +81,41 @@ export async function mount(
     `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const held = new Set<string>();
   const pointers = new Map<number, string>();
-  const timers = new Set<ReturnType<typeof setTimeout>>();
   const report = (
     id: string,
     summary: string,
     kind: "progress" | "outcome",
+    actor: "host" | "agent" | "user" = "host",
+    recipient: "user" | "agent" | "unknown" = "unknown",
+    observer: "user" | "agent" = "user",
+    reportedClaims?: import("./simulation.js").DungeonEvent["reportedClaims"]
   ) => {
     if (disposed || options.signal.aborted) return;
     try {
-      options.bridge.report({ id: `${session}-${run}-${id}`, summary, kind });
+      options.bridge.report({
+        id: `${session}-${run}-${id}`,
+        summary,
+        kind,
+        actor,
+        observer,
+        recipient,
+        ...(reportedClaims !== undefined ? { reportedClaims } : {}),
+      });
     } catch {
       /* Reporting never takes control of the host. */
     }
   };
   function flushEvents() {
     for (const event of drainDungeonEvents(state))
-      report(event.id, event.summary, event.kind);
+      report(
+        event.id,
+        event.summary,
+        event.kind,
+        event.actor,
+        event.recipient,
+        event.observer,
+        event.reportedClaims
+      );
   }
   function requestSpeech() {
     if (disposed || options.signal.aborted) return;
@@ -106,15 +125,20 @@ export async function mount(
     speaker.textContent = `${options.character.name} · preparing a remark`;
     line.textContent = "Your companion is thinking. You can keep playing.";
     let settled = false;
-    const timer = setTimeout(() => {
-      timers.delete(timer);
-      if (disposed || version !== speechVersion || settled) return;
-      settled = true;
-      speaker.textContent = options.character.name;
-      line.textContent = "No remark arrived in time. The expedition continues.";
-    }, 8500);
-    timers.add(timer);
-    const context = `This is an original fictional dungeon. You are the player's ${state.companion.role} companion. Your temperament is ${options.character.temperament}. The party just entered ${ROOM_NAMES[room]} (chamber ${room + 1}/4). ${room === 3 ? "The Hollow Warden is present; its attacks are telegraphed." : "Reinforcements will arrive while the party fights."} The player is a ${state.player.role} with ${Math.ceil(state.player.hp)} health; your companion body has ${Math.ceil(state.companion.hp)} health. Say one brief in-character line, at most two sentences. Do not claim any foe has already been defeated or any action has occurred. You supply speech only; the game owns movement, combat and decisions.`;
+    // The bounded SDK bridge owns the configured request deadline.
+    const context = `This is an original fictional dungeon. You are the player's ${
+      state.companion.role
+    } companion. Your temperament is ${
+      options.character.temperament
+    }. The party just entered ${ROOM_NAMES[room]} (chamber ${room + 1}/4). ${
+      room === 3
+        ? "The Hollow Warden is present; its attacks are telegraphed."
+        : "Reinforcements will arrive while the party fights."
+    } The player is a ${state.player.role} with ${Math.ceil(
+      state.player.hp
+    )} health; your companion body has ${Math.ceil(
+      state.companion.hp
+    )} health. Say one brief in-character line, at most two sentences. Do not claim any foe has already been defeated or any action has occurred. You supply speech only; the game owns movement, combat and decisions.`;
     void Promise.resolve()
       .then(() => {
         if (disposed || version !== speechVersion) return;
@@ -123,13 +147,17 @@ export async function mount(
       .then((result) => {
         if (!result || disposed || version !== speechVersion || settled) return;
         settled = true;
-        clearTimeout(timer);
-        timers.delete(timer);
         const speech =
           typeof result.speech === "string"
             ? result.speech.trim().slice(0, 450)
             : "";
-        speaker.textContent = `${options.character.name} · ${result.source === "llm" ? "model speech" : result.source === "scenario" ? "scenario speech" : "fallback speech"}`;
+        speaker.textContent = `${options.character.name} · ${
+          result.source === "llm"
+            ? "model speech"
+            : result.source === "scenario"
+            ? "scenario speech"
+            : "fallback speech"
+        }`;
         line.textContent = speech || "Your companion stays quiet.";
         if (speech) bubble.say(speech);
         if (speech)
@@ -137,13 +165,13 @@ export async function mount(
             `${requestId}-delivered`,
             `${options.character.name} said in ${ROOM_NAMES[room]}: ${speech}`,
             "progress",
+            "agent",
+            "user"
           );
       })
       .catch(() => {
         if (disposed || version !== speechVersion || settled) return;
         settled = true;
-        clearTimeout(timer);
-        timers.delete(timer);
         speaker.textContent = options.character.name;
         line.textContent =
           "Your companion is quiet; dialogue is unavailable. Combat continues locally.";
@@ -174,11 +202,25 @@ export async function mount(
     status.textContent =
       state.room < 0
         ? "2–4 minute expedition"
-        : `${Math.floor(state.elapsed / 60)}:${String(Math.floor(state.elapsed % 60)).padStart(2, "0")} · ${state.phase === "combat" ? `${state.enemies.length} foes · wave ${state.wave}/4` : state.phase === "won" ? "Expedition complete" : state.phase === "lost" ? "Expedition ended" : "Chamber clear"}`;
+        : `${Math.floor(state.elapsed / 60)}:${String(
+            Math.floor(state.elapsed % 60)
+          ).padStart(2, "0")} · ${
+            state.phase === "combat"
+              ? `${state.enemies.length} foes · wave ${state.wave}/4`
+              : state.phase === "won"
+              ? "Expedition complete"
+              : state.phase === "lost"
+              ? "Expedition ended"
+              : "Chamber clear"
+          }`;
     playerLabel.textContent = `You · ${state.player.role}`;
     companionLabel.textContent = `${options.character.name} · ${state.companion.role}`;
-    playerHp.textContent = `${Math.ceil(state.player.hp)} / ${state.player.maxHp}`;
-    companionHp.textContent = `${Math.ceil(state.companion.hp)} / ${state.companion.maxHp}`;
+    playerHp.textContent = `${Math.ceil(state.player.hp)} / ${
+      state.player.maxHp
+    }`;
+    companionHp.textContent = `${Math.ceil(state.companion.hp)} / ${
+      state.companion.maxHp
+    }`;
     playerBar.max = state.player.maxHp;
     playerBar.value = state.player.hp;
     companionBar.max = state.companion.maxHp;
@@ -214,7 +256,7 @@ export async function mount(
             updateHud();
             stage.focus({ preventScroll: true });
           }
-        },
+        }
       );
     } else if (current === "won" || current === "lost") {
       overlayTitle.textContent =
@@ -224,7 +266,9 @@ export async function mount(
       overlayCopy.textContent =
         current === "won"
           ? `Together you defeated the Hollow Warden. ${state.defeated} foes defeated; you survived as ${state.player.role}.`
-          : `You fell in ${ROOM_NAMES[state.room]}. Keep moving out of red circles, use your ability and stay close enough to heal.`;
+          : `You fell in ${
+              ROOM_NAMES[state.room]
+            }. Keep moving out of red circles, use your ability and stay close enough to heal.`;
       button("Start a new expedition", () => {
         if (paused || disposed) return;
         speechVersion++;
@@ -250,7 +294,7 @@ export async function mount(
       stepDungeon(state, input(), seconds);
       bubble.place(
         state.companion.x / WIDTH,
-        (state.companion.y - 57) / HEIGHT,
+        (state.companion.y - 57) / HEIGHT
       );
       flushEvents();
       hudClock += seconds;
@@ -260,7 +304,7 @@ export async function mount(
       }
     },
     options.character,
-    art,
+    art
   );
   let game: InstanceType<typeof Phaser.Game>;
   try {
@@ -310,7 +354,7 @@ export async function mount(
         held.add(control);
       }
     },
-    { signal: lifetime.signal },
+    { signal: lifetime.signal }
   );
   window.addEventListener(
     "keyup",
@@ -318,7 +362,7 @@ export async function mount(
       const control = keyMap[event.code];
       if (control) held.delete(control);
     },
-    { signal: lifetime.signal },
+    { signal: lifetime.signal }
   );
   window.addEventListener("blur", clearInput, { signal: lifetime.signal });
   stage.addEventListener("blur", clearInput, { signal: lifetime.signal });
@@ -328,7 +372,7 @@ export async function mount(
       if (!(event.target instanceof HTMLButtonElement))
         stage.focus({ preventScroll: true });
     },
-    { signal: lifetime.signal },
+    { signal: lifetime.signal }
   );
   for (const b of root.querySelectorAll<HTMLButtonElement>("[data-control]")) {
     const control = b.dataset.control!;
@@ -342,7 +386,7 @@ export async function mount(
         b.dataset.held = "true";
         b.setPointerCapture(event.pointerId);
       },
-      { signal: lifetime.signal },
+      { signal: lifetime.signal }
     );
     const release = (event: PointerEvent) => {
       pointers.delete(event.pointerId);
@@ -362,7 +406,7 @@ export async function mount(
           if (!paused) held.add(control);
         }
       },
-      { signal: lifetime.signal },
+      { signal: lifetime.signal }
     );
     b.addEventListener("keyup", () => held.delete(control), {
       signal: lifetime.signal,
@@ -400,8 +444,6 @@ export async function mount(
       bubble.destroy();
       speechVersion++;
       clearInput();
-      for (const timer of timers) clearTimeout(timer);
-      timers.clear();
       lifetime.abort();
       options.signal.removeEventListener("abort", mounted.destroy);
       game.destroy(true);
@@ -414,7 +456,7 @@ export async function mount(
       if (paused) mounted.resume();
       else mounted.pause();
     },
-    { signal: lifetime.signal },
+    { signal: lifetime.signal }
   );
   options.signal.addEventListener("abort", mounted.destroy, { once: true });
   updateHud();
