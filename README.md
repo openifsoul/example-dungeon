@@ -80,3 +80,21 @@ The standalone entry already includes its game's styles through the game module.
 Independent validation used source copies outside the Core checkout, including
 the supplied vendor tarball and lockfile, followed by frozen installation and
 checks. These were filesystem copies, not clones of a committed repository.
+
+## Original sprite art
+
+The game uses a hand-painted [sprite set](art/README.md): three persistent
+companion identities in both roles, neutral player bodies, three enemies and
+dungeon props. The prepared atlas and floor are embedded through the package's
+public build; no sibling checkout, image provider or runtime art request is needed.
+Vitals and room status sit inside the arena; there is no duplicate title above it.
+
+## In-game speech
+
+The host owns its speech bubble, placement and animation. It implements the
+optional `MountedGame.say(speech)` presentation API for player-requested chat.
+Autonomous/requested game dialogue is displayed after the game's normal freshness
+checks. Bubbles type the text visually, announce the whole line accessibly, respect
+reduced motion and release timers/animations on pause or destruction. The SDK
+returns authored scenario/fallback reactions instead of quoting raw host reports;
+model plan explanations are not dialogue. No action authority is added.

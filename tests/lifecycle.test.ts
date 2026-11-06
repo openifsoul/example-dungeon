@@ -168,3 +168,35 @@ test("destroy cancels pending chat even when transport ignores abort and prevent
   await Promise.resolve();
   assert.equal(speeches, 0);
 });
+
+test("player chat reaches the mounted game's presentation API without controlling mechanics", async () => {
+  const shown: string[] = [];
+  let destroys = 0;
+  const session = await createExampleSession(
+    container,
+    {
+      signal: new AbortController().signal,
+      transport: async () => ({
+        choiceId: "",
+        speech: "Good to see you again!",
+        source: "scenario",
+      }),
+    },
+    async () => ({
+      pause() {},
+      resume() {},
+      say(text) {
+        shown.push(text);
+      },
+      destroy() {
+        destroys++;
+      },
+    }),
+  );
+  await session.chat("Hello!");
+  assert.deepEqual(shown, ["Good to see you again!"]);
+  session.destroy();
+  await assert.rejects(session.chat("A late message"), { name: "AbortError" });
+  assert.equal(shown.length, 1);
+  assert.equal(destroys, 1);
+});

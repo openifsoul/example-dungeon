@@ -50,6 +50,7 @@ export async function createExampleSession(
       options.onObservation?.(event);
     },
     onSpeech(reply, request) {
+      if (request.operation === "chat") game?.say?.(reply.speech);
       if (request.operation === "chat")
         remember({
           id: crypto.randomUUID(),

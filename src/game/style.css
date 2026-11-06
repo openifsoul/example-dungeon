@@ -227,3 +227,62 @@
     transform: none;
   }
 }
+
+.ifsoul-dungeon .dg-vitals {
+  position: absolute;
+  z-index: 3;
+  top: 12px;
+  left: 14px;
+  right: 14px;
+  max-width: 470px;
+  padding: 10px 12px;
+  background: #101c26df;
+  color: #f0eadb;
+  border-radius: 10px;
+  pointer-events: none;
+}
+.ifsoul-dungeon .dg-heading {
+  position: absolute;
+  z-index: 3;
+  bottom: 10px;
+  left: 14px;
+  right: 14px;
+  padding: 5px 9px;
+  background: #101c26cf;
+  color: #f0eadb;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.ifsoul-dungeon .dg-heading .dg-subtitle {
+  color: #e1ddce;
+  margin: 0;
+}
+.ifsoul-dungeon .dg-overlay {
+  z-index: 4;
+}
+.ifsoul-dungeon .dg-paused {
+  top: 80px;
+  z-index: 3;
+}
+@media (max-width: 460px) {
+  .ifsoul-dungeon .dg-vitals {
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    padding: 6px 8px;
+    gap: 8px;
+  }
+  .ifsoul-dungeon .dg-vitals label {
+    font-size: 9px;
+  }
+  .ifsoul-dungeon .dg-heading {
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    gap: 3px;
+  }
+  .ifsoul-dungeon .dg-heading .dg-subtitle,
+  .ifsoul-dungeon .dg-status {
+    font-size: 9px;
+  }
+}

@@ -12,6 +12,7 @@ import {
   type Role,
 } from "./simulation.js";
 import "./style.css";
+import { createSpeechBubble } from "./speech-bubble.js";
 
 /** Self-contained browser host. Models can speak, never select mechanics. */
 export async function mount(
@@ -25,15 +26,19 @@ export async function mount(
     import("./scene.js"),
   ]);
   if (options.signal.aborted) return inert;
+  const { loadDungeonArt } = await import("./art.js");
+  const art = await loadDungeonArt();
+  if (options.signal.aborted) return inert;
   const lifetime = new AbortController();
   const root = document.createElement("section");
   root.className = "ifsoul-dungeon";
   root.setAttribute("aria-label", "Hollow Warden dungeon game");
   root.innerHTML = `
-    <div class="dg-heading"><div><h2>The Hollow Warden</h2><p class="dg-subtitle">Three chambers. One guardian. Stay together.</p></div><span class="dg-status"></span></div>
+    <div class="dg-stage" tabindex="0" role="group" aria-label="Dungeon controls. WASD or arrow keys move. Hold Space to attack. Shift uses your ability."><div class="dg-canvas"></div>
     <div class="dg-vitals"><div><label><span class="dg-player-label">You</span><span class="dg-player-hp"></span></label><progress class="dg-player-bar" max="100" value="100" aria-label="Your health"></progress></div><div class="dg-companion"><label><span class="dg-companion-label"></span><span class="dg-companion-hp"></span></label><progress class="dg-companion-bar" max="100" value="100" aria-label="Companion health"></progress></div></div>
-    <div class="dg-stage" tabindex="0" role="group" aria-label="Dungeon controls. WASD or arrow keys move. Hold Space to attack. Shift uses your ability."><div class="dg-canvas"></div><div class="dg-paused" hidden>Paused · progress preserved</div><div class="dg-overlay"><div><h3 class="dg-overlay-title"></h3><p class="dg-overlay-copy"></p><div class="dg-options"></div></div></div></div>
-    <div class="dg-speech" role="status" aria-live="polite"><span class="dg-speaker"></span><span class="dg-line">Choose your role to begin.</span></div>
+    <div class="dg-heading"><p class="dg-subtitle"></p><span class="dg-status"></span></div>
+    <div class="dg-paused" hidden>Paused · progress preserved</div><div class="dg-overlay"><div><h3 class="dg-overlay-title"></h3><p class="dg-overlay-copy"></p><div class="dg-options"></div></div></div></div>
+    <div class="dg-speech" hidden><span class="dg-speaker"></span><span class="dg-line">Choose your role to begin.</span></div>
     <div class="dg-controls"><div class="dg-dpad" aria-label="Movement"><button class="dg-up" data-control="up" aria-label="Move up">↑</button><button class="dg-left" data-control="left" aria-label="Move left">←</button><button class="dg-down" data-control="down" aria-label="Move down">↓</button><button class="dg-right" data-control="right" aria-label="Move right">→</button></div><div class="dg-actions"><button data-control="attack">Attack · Space</button><button data-control="skill" class="dg-skill">Ability · Shift</button><button class="dg-pause">Pause</button></div></div>
     <p class="dg-hint">Move with WASD / arrows. Hold attack; aim is automatic. Leave red circles before they strike. Tank guards; Healer restores nearby allies. Tap the arena to focus keyboard controls.</p>`;
   container.appendChild(root);
@@ -45,6 +50,7 @@ export async function mount(
     return found;
   }
   const stage = element<HTMLDivElement>(".dg-stage");
+  const bubble = createSpeechBubble(stage, options.character.name);
   const overlay = element<HTMLDivElement>(".dg-overlay");
   const overlayTitle = element(".dg-overlay-title");
   const overlayCopy = element(".dg-overlay-copy");
@@ -125,6 +131,7 @@ export async function mount(
             : "";
         speaker.textContent = `${options.character.name} · ${result.source === "llm" ? "model speech" : result.source === "scenario" ? "scenario speech" : "fallback speech"}`;
         line.textContent = speech || "Your companion stays quiet.";
+        if (speech) bubble.say(speech);
         if (speech)
           report(
             `${requestId}-delivered`,
@@ -241,6 +248,10 @@ export async function mount(
     (seconds) => {
       if (disposed || paused) return;
       stepDungeon(state, input(), seconds);
+      bubble.place(
+        state.companion.x / WIDTH,
+        (state.companion.y - 57) / HEIGHT,
+      );
       flushEvents();
       hudClock += seconds;
       if (hudClock > 0.1 || state.phase !== overlayPhase) {
@@ -248,6 +259,8 @@ export async function mount(
         updateHud();
       }
     },
+    options.character,
+    art,
   );
   let game: InstanceType<typeof Phaser.Game>;
   try {
@@ -263,6 +276,7 @@ export async function mount(
       scene: [scene],
     });
   } catch (error) {
+    bubble.destroy();
     root.remove();
     lifetime.abort();
     throw error;
@@ -358,9 +372,13 @@ export async function mount(
     });
   }
   const mounted: MountedGame = {
+    say(text) {
+      if (!disposed) bubble.say(text);
+    },
     pause() {
       if (disposed || paused) return;
       paused = true;
+      bubble.pause();
       clearInput();
       game.pause();
       pausedLabel.hidden = false;
@@ -370,6 +388,7 @@ export async function mount(
     resume() {
       if (disposed || !paused) return;
       paused = false;
+      bubble.resume();
       game.resume();
       pausedLabel.hidden = true;
       pauseButton.textContent = "Pause";
@@ -378,6 +397,7 @@ export async function mount(
     destroy() {
       if (disposed) return;
       disposed = true;
+      bubble.destroy();
       speechVersion++;
       clearInput();
       for (const timer of timers) clearTimeout(timer);
