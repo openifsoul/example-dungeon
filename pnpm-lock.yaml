@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@ifsoul/adapter-sdk':
-        specifier: file:vendor/release050-cc2c16233fb6/ifsoul-adapter-sdk-0.5.0.tgz
-        version: file:vendor/release050-cc2c16233fb6/ifsoul-adapter-sdk-0.5.0.tgz
+        specifier: 0.5.0
+        version: 0.5.0
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -234,9 +234,8 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@ifsoul/adapter-sdk@file:vendor/release050-cc2c16233fb6/ifsoul-adapter-sdk-0.5.0.tgz':
-    resolution: {integrity: sha512-JnPtgXnvBNrJOEHTuoyQy5OyqRS2gCn5kMti0OsqEA59f+zUWyb0KPhyCbBMxs8s0t3ksvfcqDaM2m6oznx0Qg==, tarball: file:vendor/release050-cc2c16233fb6/ifsoul-adapter-sdk-0.5.0.tgz}
-    version: 0.5.0
+  '@ifsoul/adapter-sdk@0.5.0':
+    resolution: {integrity: sha512-JnPtgXnvBNrJOEHTuoyQy5OyqRS2gCn5kMti0OsqEA59f+zUWyb0KPhyCbBMxs8s0t3ksvfcqDaM2m6oznx0Qg==}
     engines: {node: '>=22.18'}
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -1681,7 +1680,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@ifsoul/adapter-sdk@file:vendor/release050-cc2c16233fb6/ifsoul-adapter-sdk-0.5.0.tgz': {}
+  '@ifsoul/adapter-sdk@0.5.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
