@@ -10,3 +10,5 @@ output/
 .playwright-cli/
 
 !vendor/release060-*/*.tgz
+
+!vendor/release070-*/*.tgz

@@ -10,7 +10,7 @@ are Apache-2.0; adapted shadcn Button retains its MIT notice in LICENSES.
 ## Run independently
 
 Use Node 22.18–24 and pnpm 10.15.0. The checked-in lockfile selects the
-checksum-pinned `@ifsoul/adapter-sdk@0.6.0` archive under `vendor/`.
+checksum-pinned `@ifsoul/adapter-sdk@0.7.0` archive under `vendor/`.
 The example runs independently of an IfSoul account, provider key or Core checkout.
 
 ```sh
