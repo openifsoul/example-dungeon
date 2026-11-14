@@ -10,6 +10,7 @@ function App() {
   const [run, setRun] = useState(0),
     [mode, setMode] = useState("scenario"),
     [paused, setPaused] = useState(false),
+    [ready, setReady] = useState(false),
     [status, setStatus] = useState("Opening the game…"),
     [speech, setSpeech] = useState(""),
     [draft, setDraft] = useState(""),
@@ -28,6 +29,7 @@ function App() {
     setChatPending(false);
     setChatError("");
     setPaused(false);
+    setReady(false);
     setStatus("Opening the game…");
     void createExampleSession(host.current!, {
       signal: controller.signal,
@@ -53,6 +55,7 @@ function App() {
         if (controller.signal.aborted) game.destroy();
         else {
           session.current = game;
+          setReady(true);
           setStatus(
             mode === "scenario"
               ? "Scenario · no model or account"
@@ -81,7 +84,8 @@ function App() {
     setTranscript((old) => [...old, { role: "You", text }].slice(-12));
     try {
       await current.chat(text);
-      if (session.current === current) setDraft("");
+      if (session.current === current)
+        setDraft((value) => value.trim() === text ? "" : value);
     } catch {
       if (session.current === current)
         setChatError(
@@ -110,6 +114,7 @@ function App() {
           </select>
         </label>
         <Button
+          disabled={!ready}
           onClick={() => {
             if (paused) session.current?.resume();
             else session.current?.pause();
@@ -158,13 +163,14 @@ function App() {
             id="chat-draft"
             value={draft}
             maxLength={600}
+            aria-describedby={chatError ? "chat-draft-error" : undefined}
             onChange={(event) => setDraft(event.target.value)}
             rows={3}
           />
-          <Button disabled={!draft.trim() || chatPending} type="submit">
+          <Button disabled={!ready || !draft.trim() || chatPending} type="submit">
             {chatPending ? "Sending…" : "Send message"}
           </Button>
-          {chatError && <p role="alert">{chatError}</p>}
+          {chatError && <p id="chat-draft-error" role="alert">{chatError}</p>}
         </form>
       </section>
       <section aria-label="Observed outcomes">

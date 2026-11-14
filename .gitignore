@@ -8,3 +8,5 @@ output/
 *.tgz
 !vendor/*.tgz
 .playwright-cli/
+
+!vendor/release060-*/*.tgz

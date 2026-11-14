@@ -9,8 +9,8 @@ are Apache-2.0; adapted shadcn Button retains its MIT notice in LICENSES.
 
 ## Run independently
 
-Use Node 22.18–24 and pnpm 10.15.0. Installation fetches the exact
-`@ifsoul/adapter-sdk@0.5.0` release from npm using the checked-in lockfile.
+Use Node 22.18–24 and pnpm 10.15.0. The checked-in lockfile selects the
+checksum-pinned `@ifsoul/adapter-sdk@0.6.0` archive under `vendor/`.
 The example runs independently of an IfSoul account, provider key or Core checkout.
 
 ```sh
@@ -46,7 +46,7 @@ standalone cloud authentication and cross-origin hosting are not implemented.
 ## Package without publication
 
 Run `pnpm build` then `pnpm pack --pack-destination output/packages`.
-The example tarball bundles the SDK installed from npm.
+The example tarball bundles the SDK from the pinned local archive.
 
 Simulation and adapter lifecycle tests run with pnpm test. Browser checks are
 separate and headless.
