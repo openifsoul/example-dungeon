@@ -12,3 +12,5 @@ output/
 !vendor/release060-*/*.tgz
 
 !vendor/release070-*/*.tgz
+
+!vendor/release080-09b15a20d5af/ifsoul-adapter-sdk-0.8.0.tgz
