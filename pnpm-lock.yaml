@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@ifsoul/adapter-sdk':
-        specifier: file:vendor/release080-09b15a20d5af/ifsoul-adapter-sdk-0.8.0.tgz
-        version: file:vendor/release080-09b15a20d5af/ifsoul-adapter-sdk-0.8.0.tgz
+        specifier: file:vendor/release090-351fcbf5d832/ifsoul-adapter-sdk-0.9.0.tgz
+        version: file:vendor/release090-351fcbf5d832/ifsoul-adapter-sdk-0.9.0.tgz
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -234,9 +234,9 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@ifsoul/adapter-sdk@file:vendor/release080-09b15a20d5af/ifsoul-adapter-sdk-0.8.0.tgz':
-    resolution: {integrity: sha512-8tSvPzGQaz74qhkXtuh1/v9QzhqgysJBqktq4IjQD6s14UkuKKRaJy3fMT7sGSYDHwTel16L310U/kpkuxbMFQ==, tarball: file:vendor/release080-09b15a20d5af/ifsoul-adapter-sdk-0.8.0.tgz}
-    version: 0.8.0
+  '@ifsoul/adapter-sdk@file:vendor/release090-351fcbf5d832/ifsoul-adapter-sdk-0.9.0.tgz':
+    resolution: {integrity: sha512-s27zgIUv5ZVh5Cd6nEKpEFxPwwjfWtVj66cqu7MnSEPeKx5I+8IaxbTqYW8XUDh3iy5SXfk0CBaFeHnSHlIlpQ==, tarball: file:vendor/release090-351fcbf5d832/ifsoul-adapter-sdk-0.9.0.tgz}
+    version: 0.9.0
     engines: {node: '>=22.18'}
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -1681,7 +1681,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@ifsoul/adapter-sdk@file:vendor/release080-09b15a20d5af/ifsoul-adapter-sdk-0.8.0.tgz': {}
+  '@ifsoul/adapter-sdk@file:vendor/release090-351fcbf5d832/ifsoul-adapter-sdk-0.9.0.tgz': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
